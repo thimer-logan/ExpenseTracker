@@ -10,6 +10,7 @@ import { GlobalStyles } from "./constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import IconButton from "./components/ui/IconButton";
 import ExpensesContextProvider from "./store/expenses-context";
+import Home from "./screens/Home";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -40,13 +41,13 @@ function ExpensesOverview() {
       })}
     >
       <Tab.Screen
-        name="RecentExpenses"
-        component={RecentExpenses}
+        name="Home"
+        component={Home}
         options={{
-          title: "Recent Expenses",
-          tabBarLabel: "Recents",
+          title: "Home",
+          tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="hourglass" size={size} color={color} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
