@@ -9,7 +9,9 @@ export const GlobalStyles = {
     primary800: "#200364",
     accent500: "#f7bc0c",
     error50: "#fcc4e4",
+    error300: "#ff0033",
     error500: "#9b095c",
+    success500: "#4BB543",
     gray500: "#39324a",
     gray700: "#221c30",
     background: {
@@ -23,7 +25,7 @@ export const GlobalStyles = {
     },
     text: {
       primary: "#EDEDED",
-      secondary: "#B0B0B0",
+      secondary: "#b9b9b9",
     },
   },
 };
