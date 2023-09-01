@@ -3,10 +3,10 @@ import { DUMMY_EXPENSES } from "../data/dummy-data";
 
 export const ExpensesContext = createContext({
   expenses: [],
-  addExpense: ({ description, amount, date }) => {},
+  addExpense: ({ name, amount, date, type, description, items }) => {},
   setExpenses: (expenses) => {},
   deleteExpense: (id) => {},
-  updateExpense: (id, { description, amount, date }) => {},
+  updateExpense: (id, { name, amount, date, type, description, items }) => {},
 });
 
 function expensesReducer(state, action) {
@@ -33,7 +33,7 @@ function expensesReducer(state, action) {
 }
 
 function ExpensesContextProvider({ children }) {
-  const [expensesState, dispatch] = useReducer(expensesReducer, []);
+  const [expensesState, dispatch] = useReducer(expensesReducer, DUMMY_EXPENSES);
 
   function addExpense(expenseData) {
     dispatch({ type: "ADD", payload: expenseData });

@@ -3,7 +3,14 @@ import { GlobalStyles } from "../../constants/styles";
 import { getFormattedDate } from "../../utils/date";
 import { useNavigation } from "@react-navigation/native";
 
-export default function ExpenseItem({ id, description, amount, date }) {
+export default function ExpenseItem({
+  id,
+  name,
+  amount,
+  date,
+  type,
+  description,
+}) {
   const navigation = useNavigation();
 
   const pressHandler = () => {
@@ -17,13 +24,18 @@ export default function ExpenseItem({ id, description, amount, date }) {
     >
       <View style={styles.item}>
         <View>
-          <Text style={[styles.textBase, styles.description]}>
-            {description}
-          </Text>
+          <Text style={[styles.textBase, styles.name]}>{name}</Text>
           <Text style={styles.textBase}>{getFormattedDate(date)}</Text>
         </View>
         <View style={styles.amountContainer}>
-          <Text style={styles.amount}>${amount.toFixed(2)}</Text>
+          <Text
+            style={[
+              styles.amount,
+              type === "Income" ? styles.incomeStyle : styles.expenseStyle,
+            ]}
+          >
+            ${amount.toFixed(2)}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -47,7 +59,7 @@ const styles = StyleSheet.create({
   textBase: {
     color: GlobalStyles.colors.text.primary,
   },
-  description: {
+  name: {
     fontSize: 16,
     marginBottom: 4,
     fontWeight: "bold",
@@ -62,8 +74,14 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   amount: {
-    color: GlobalStyles.colors.text.primary,
+    //color: GlobalStyles.colors.text.primary,
     fontWeight: "bold",
+  },
+  incomeStyle: {
+    color: GlobalStyles.colors.success500,
+  },
+  expenseStyle: {
+    color: GlobalStyles.colors.error300,
   },
   pressed: {
     opacity: 0.75,

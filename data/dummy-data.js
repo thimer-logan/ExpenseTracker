@@ -21,6 +21,7 @@ export const DUMMY_EXPENSES = [
     type: "Income",
     date: new Date("2023-07-25"),
     category: EXPENSE_CATEGORIES.MISCELLANEOUS,
+    items: [],
   },
   {
     id: "e1",
@@ -29,6 +30,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-08-05"),
     category: EXPENSE_CATEGORIES.SHOPPING_PERSONAL_CARE,
+    items: [],
   },
   {
     id: "e2",
@@ -37,16 +39,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-08-04"),
     category: EXPENSE_CATEGORIES.FOOD,
-    items: [
-      {
-        name: "Carrots",
-        amount: 3.25,
-      },
-      {
-        name: "Chicken",
-        amount: 34.5,
-      },
-    ],
+    items: ["Carrots", "Chicken"],
   },
   {
     id: "e3",
@@ -55,6 +48,14 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-08-03"),
     category: EXPENSE_CATEGORIES.FAMILY_PERSONAL,
+    items: [
+      "Doggie Treats",
+      "Chew Toy",
+      "Cat Food",
+      "Litter Box",
+      "Fish Tank",
+      "Chew Toy",
+    ],
   },
   {
     id: "e4",
@@ -63,6 +64,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-08-02"),
     category: EXPENSE_CATEGORIES.TRANSPORTATION,
+    items: [],
   },
   {
     id: "e5",
@@ -71,6 +73,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-08-01"),
     category: EXPENSE_CATEGORIES.FOOD,
+    items: [],
   },
   {
     id: "e6",
@@ -79,6 +82,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-24"),
     category: EXPENSE_CATEGORIES.ENTERTAINMENT,
+    items: [],
   },
   {
     id: "e7",
@@ -87,6 +91,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-21"),
     category: EXPENSE_CATEGORIES.EDUCATION,
+    items: [],
   },
   {
     id: "e8",
@@ -95,6 +100,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-29"),
     category: EXPENSE_CATEGORIES.HEALTH_WELLNESS,
+    items: [],
   },
   {
     id: "e9",
@@ -103,6 +109,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-28"),
     ategory: EXPENSE_CATEGORIES.TRANSPORTATION,
+    items: [],
   },
   {
     id: "e10",
@@ -111,6 +118,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-27"),
     ategory: EXPENSE_CATEGORIES.ENTERTAINMENT,
+    items: [],
   },
   {
     id: "e11",
@@ -119,6 +127,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-26"),
     category: EXPENSE_CATEGORIES.HEALTH_WELLNESS,
+    items: [],
   },
   {
     id: "e12",
@@ -127,6 +136,7 @@ export const DUMMY_EXPENSES = [
     type: "Expense",
     date: new Date("2023-07-25"),
     category: EXPENSE_CATEGORIES.FOOD,
+    items: [],
   },
   {
     id: "e13",
@@ -135,5 +145,6 @@ export const DUMMY_EXPENSES = [
     type: "Income",
     date: new Date("2023-08-25"),
     category: EXPENSE_CATEGORIES.MISCELLANEOUS,
+    items: [],
   },
 ];
