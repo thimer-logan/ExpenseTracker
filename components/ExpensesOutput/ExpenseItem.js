@@ -10,6 +10,7 @@ export default function ExpenseItem({
   date,
   type,
   description,
+  items,
 }) {
   const navigation = useNavigation();
 
@@ -25,7 +26,9 @@ export default function ExpenseItem({
       <View style={styles.item}>
         <View>
           <Text style={[styles.textBase, styles.name]}>{name}</Text>
-          <Text style={styles.textBase}>{getFormattedDate(date)}</Text>
+          <Text style={styles.textBase}>
+            {getFormattedDate(new Date(date))}
+          </Text>
         </View>
         <View style={styles.amountContainer}>
           <Text

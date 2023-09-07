@@ -23,7 +23,9 @@ export default function ExpenseForm({
       isValid: true,
     },
     date: {
-      value: defaultValues ? getFormattedDate(defaultValues.date) : "",
+      value: defaultValues
+        ? getFormattedDate(new Date(defaultValues.date))
+        : "",
       isValid: true,
     },
     name: {
@@ -71,7 +73,7 @@ export default function ExpenseForm({
   const submitHandler = () => {
     const expenseData = {
       amount: +inputs.amount.value, // convert string to number
-      date: new Date(inputs.date.value),
+      date: new Date(inputs.date.value).toISOString(),
       name: inputs.name.value,
       type: inputs.type.value,
       description: inputs.description.value,
