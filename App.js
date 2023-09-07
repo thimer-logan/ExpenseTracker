@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import ManageExpense from "./screens/ManageExpense";
 import RecentExpenses from "./screens/RecentExpenses";
 import AllExpenses from "./screens/AllExpenses";
@@ -11,11 +11,21 @@ import { Ionicons } from "@expo/vector-icons";
 import IconButton from "./components/ui/IconButton";
 import ExpensesContextProvider from "./store/expenses-context";
 import Home from "./screens/Home";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import { store } from "./store/store";
+import { PaperProvider } from "react-native-paper";
+import Login from "./screens/Login";
+import Signup from "./screens/Signup";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authenticateSuccess, logout } from "./store/auth";
+import LoadingOverlay from "./components/ui/LoadingOverlay";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function ExpensesOverview() {
+  const dispatch = useDispatch();
   return (
     <Tab.Navigator
       screenOptions={({ navigation }) => ({
@@ -38,6 +48,14 @@ function ExpensesOverview() {
             onPress={() => navigation.navigate("ManageExpense")}
           />
         ),
+        headerLeft: ({ tintColor }) => (
+          <IconButton
+            icon="log-out-outline"
+            size={24}
+            color={tintColor}
+            onPress={() => dispatch(logout())}
+          />
+        ),
       })}
     >
       <Tab.Screen
@@ -51,6 +69,36 @@ function ExpensesOverview() {
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="ManageExpense"
+        component={ManageExpense}
+        options={{
+          tabBarLabel: "",
+          tabBarIcon: ({ color, size }) => {
+            return (
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 20,
+                  width: 50,
+                  height: 50,
+                  borderRadius: 50,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: GlobalStyles.colors.accent.primary500,
+                }}
+              >
+                <Ionicons
+                  name="add"
+                  size={40}
+                  color="white"
+                  style={{ alignContent: "center" }}
+                />
+              </View>
+            );
+          },
+        }}
+      /> */}
       <Tab.Screen
         name="AllExpenses"
         component={AllExpenses}
@@ -66,39 +114,100 @@ function ExpensesOverview() {
   );
 }
 
+function AuthenticatedStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: GlobalStyles.colors.background.secondary,
+          shadowColor: "transparent", // this covers iOS
+          elevation: 0, // this covers Android
+        },
+        headerTintColor: "white",
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+      }}
+    >
+      <Stack.Screen
+        name="ExpensesOverview"
+        component={ExpensesOverview}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ManageExpense"
+        component={ManageExpense}
+        options={{
+          presentation: "modal",
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: GlobalStyles.colors.background.secondary,
+          shadowColor: "transparent", // this covers iOS
+          elevation: 0, // this covers Android
+        },
+        headerTintColor: "white",
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+      }}
+    >
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Signup" component={Signup} />
+    </Stack.Navigator>
+  );
+}
+
+function Navigation() {
+  const auth = useSelector((state) => state.auth);
+
+  return (
+    <NavigationContainer>
+      {!auth.isAuthenticated && <AuthStack />}
+      {auth.isAuthenticated && <AuthenticatedStack />}
+    </NavigationContainer>
+  );
+}
+
+function Root() {
+  const [isTryingLogin, setIsTryingLogin] = useState(true);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const storedToken = await AsyncStorage.getItem("token");
+      const storedUid = await AsyncStorage.getItem("uid");
+
+      if (storedToken && storedUid) {
+        dispatch(authenticateSuccess({ token: storedToken, uid: storedUid }));
+      }
+
+      setIsTryingLogin(false);
+    };
+
+    fetchToken();
+  }, []);
+
+  if (isTryingLogin) {
+    return <LoadingOverlay />;
+  }
+
+  return <Navigation />;
+}
+
 export default function App() {
   return (
     <>
       <StatusBar style="light" />
-      <ExpensesContextProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: GlobalStyles.colors.background.secondary,
-                shadowColor: "transparent", // this covers iOS
-                elevation: 0, // this covers Android
-              },
-              headerTintColor: "white",
-              headerShadowVisible: false,
-              headerBackTitleVisible: false,
-            }}
-          >
-            <Stack.Screen
-              name="ExpensesOverview"
-              component={ExpensesOverview}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="ManageExpense"
-              component={ManageExpense}
-              options={{
-                presentation: "modal",
-              }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </ExpensesContextProvider>
+      <Provider store={store}>
+        <Root />
+      </Provider>
     </>
   );
 }
