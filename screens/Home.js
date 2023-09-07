@@ -2,39 +2,46 @@ import { StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import BalanceSummary from "../components/Overview/BalanceSummary";
 import { GlobalStyles } from "../constants/styles";
-import { formatBalance } from "../utils/numbers";
+import {
+  formatBalance,
+  getTotalExpenses,
+  getTotalIncome,
+} from "../utils/numbers";
 import BalanceChart from "../components/Overview/BalanceChart";
 import TimelineSelector from "../components/ui/TimelineSelector";
 import Button from "../components/ui/Button";
 import ExpensesOutput from "../components/ExpensesOutput/ExpensesOutput";
 import { DUMMY_EXPENSES } from "../data/dummy-data";
-import { ExpensesContext } from "../store/expenses-context";
-import { fetchExpenses } from "../utils/http";
+import { fetchExpenses, initializeExpenses } from "../utils/http";
 import { getDateMinusDays, getMinusDaysFromFilter } from "../utils/date";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import ErrorOverlay from "../components/ui/ErrorOverlay";
+import { useDispatch, useSelector } from "react-redux";
+import { setExpenses } from "../store/expenses";
 
 export default function Home({ navigation }) {
   const [timeline, setTimeline] = useState("month");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState();
-  const expensesCtx = useContext(ExpensesContext);
+
+  const expenses = useSelector((state) => state.expenses);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const getExpenses = async () => {
-      setIsLoading(true);
+    const getExpenses = () => {
+      //setIsLoading(true);
       try {
-        //const expenses = await fetchExpenses();
-        //expensesCtx.setExpenses(expenses);
+        dispatch(initializeExpenses(0));
       } catch (error) {
+        console.log(error);
         setError("Could not fetch expenses");
       }
 
-      setIsLoading(false);
+      //setIsLoading(false);
     };
 
     getExpenses();
-  }, []);
+  }, [dispatch]);
 
   const onTimelineChangeHandler = (value) => {
     setTimeline(value);
@@ -44,35 +51,40 @@ export default function Home({ navigation }) {
     navigation.navigate("AllExpenses");
   };
 
-  const recentExpenses = expensesCtx.expenses.filter((expense) => {
-    const days = getMinusDaysFromFilter(timeline);
-    const today = new Date();
-    const date7DaysAgo = getDateMinusDays(today, days);
-
-    return expense.date >= date7DaysAgo && expense.date <= today;
-  });
-
-  const income = expensesCtx.expenses
-    .filter((item) => item.type === "Income")
-    .reduce((acc, current) => acc + current.amount, 0);
-  const expenses = expensesCtx.expenses
-    .filter((item) => item.type === "Expense")
-    .reduce((acc, current) => acc + current.amount, 0);
-
-  const balance = income - expenses;
-
-  if (error && !isLoading) {
+  if (error && !expenses.loading) {
     return <ErrorOverlay message={error} />;
   }
 
-  if (isLoading) {
+  if (expenses.loading) {
     return <LoadingOverlay />;
   }
 
+  const recentExpenses = expenses.expenses.filter((expense) => {
+    const days = getMinusDaysFromFilter(timeline);
+    const today = new Date();
+    const dateNDaysAgo = getDateMinusDays(today, days);
+    const date = new Date(expense.date);
+
+    return date >= dateNDaysAgo && date <= today;
+  });
+
+  const totalIncome = getTotalIncome(expenses.expenses);
+  const totalExpenses = getTotalExpenses(expenses.expenses);
+
+  const balance = totalIncome - totalExpenses;
+
   return (
     <View style={styles.container}>
-      <BalanceSummary balance={balance} income={income} expenses={expenses} />
-      <BalanceChart data={recentExpenses} interval={timeline} />
+      <BalanceSummary
+        balance={balance}
+        income={totalIncome}
+        expenses={totalExpenses}
+      />
+      <BalanceChart
+        data={expenses.expenses}
+        interval={timeline}
+        totalBalance={balance}
+      />
       <TimelineSelector
         buttons={["day", "week", "month", "year"]}
         value={timeline}
