@@ -11,7 +11,7 @@ export function getIntervalForTimeline(timeline) {
     case "week":
       return "daily";
     case "month":
-      return "weekly";
+      return "daily";
     case "year":
       return "monthly";
     default:
@@ -39,19 +39,20 @@ export function getNextInterval(date, intervalType) {
   }
 }
 
-export function getBalanceByInterval(data, intervalType) {
-  if (data === null || data.length <= 0) {
+export function getBalanceByInterval(ddata, intervalType, startingBalance) {
+  if (ddata === null || ddata.length <= 0) {
     return [];
   }
 
-  data.sort((a, b) => a.date - b.date);
+  const data = [...ddata];
+  data.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  let balance = 0;
+  let balance = startingBalance;
   const balances = [];
-  let currentEndDate = getNextInterval(data[0].date, intervalType);
+  let currentEndDate = getNextInterval(new Date(data[0].date), intervalType);
 
   data.forEach((item) => {
-    while (item.date >= currentEndDate) {
+    while (new Date(item.date) >= currentEndDate) {
       balances.push({
         value: balance,
         date: currentEndDate,
@@ -73,4 +74,50 @@ export function getBalanceByInterval(data, intervalType) {
   });
 
   return balances;
+}
+
+export function getBalanceDataPoints(data) {
+  if (data === null || data.length <= 0) {
+    return [];
+  }
+
+  data.sort((a, b) => a.date - b.date);
+
+  let balance = 0;
+  const balances = [];
+
+  data.forEach((item) => {
+    if (item.type === "Income") {
+      balance += item.amount;
+    } else if (item.type === "Expense") {
+      balance -= item.amount;
+    }
+
+    balances.push({
+      value: balance,
+      date: item.date,
+    });
+  });
+
+  return balances;
+}
+
+export function getTotalIncome(data) {
+  if (data === null || data.length <= 0) {
+    return 0;
+  }
+
+  return data
+    .filter((item) => item.type === "Income")
+    .reduce((acc, current) => acc + current.amount, 0);
+}
+
+export function getTotalExpenses(data) {
+  if (data === null || data.length <= 0) {
+    return 0;
+  }
+
+  return data
+    .filter((item) => item.type === "Expense")
+    .reduce((acc, current) => acc + current.amount, 0);
 }
