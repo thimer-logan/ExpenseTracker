@@ -14,9 +14,12 @@ export const expensesSlice = createSlice({
     },
     deleteExpense: (state, action) => {
       state.loading = false;
-      return state.expenses.filter(
-        (expense) => expense.id !== action.payload.id
+      const index = state.expenses.findIndex(
+        (expense) => expense.id === action.payload
       );
+      if (index > -1) {
+        state.expenses.splice(index, 1);
+      }
     },
     updateExpense: (state, action) => {
       const index = state.expenses.findIndex(
