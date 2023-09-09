@@ -1,13 +1,16 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import { LineChart } from "react-native-gifted-charts";
+//import { LineChart } from "react-native-gifted-charts";
 import { GlobalStyles } from "../../constants/styles";
 import {
   getBalanceByInterval,
+  getBalanceDataPoints,
   getIntervalForTimeline,
 } from "../../utils/numbers";
+import { getDateMinusDays, getMinusDaysFromFilter } from "../../utils/date";
+import { LineChart } from "react-native-chart-kit";
 
-export default function BalanceChart({ data, interval }) {
+export default function BalanceChart({ data, interval, totalBalance }) {
   const lineData = [
     { value: 0 },
     { value: 20 },
@@ -19,24 +22,82 @@ export default function BalanceChart({ data, interval }) {
     { value: 85 },
   ];
 
-  const balances = getBalanceByInterval(data, getIntervalForTimeline(interval));
-  console.log(balances);
+  const balances = getBalanceByInterval(
+    data,
+    getIntervalForTimeline(interval),
+    0
+  );
+
+  const balancesInInterval = balances.filter((expense) => {
+    const days = getMinusDaysFromFilter(interval);
+    const today = new Date();
+    const dateNDaysAgo = getDateMinusDays(today, days);
+    const date = new Date(expense.date);
+
+    return date >= dateNDaysAgo && date <= today;
+  });
+
+  if (balancesInInterval.length <= 0) {
+    balancesInInterval.push({
+      value: totalBalance,
+      date: new Date().toISOString(),
+    });
+    balancesInInterval.push({
+      value: totalBalance,
+      date: new Date().toISOString(),
+    });
+  }
 
   return (
     <View style={styles.container}>
       <LineChart
+        data={{
+          //labels: ["January", "February", "March", "April"],
+          datasets: [
+            {
+              data: balancesInInterval.map((item) => item.value),
+              withDots: false,
+              color: (opacity = 255) => `rgba(39, 174, 96, ${opacity})`,
+            },
+          ],
+        }}
+        width={Dimensions.get("window").width - 48} // from react-native
+        height={220}
+        withInnerLines={false}
+        transparent={true}
+        fromZero={true}
+        chartConfig={{
+          //backgroundColor: "#1cc910",
+          backgroundGradientFrom: GlobalStyles.colors.background.secondary,
+          backgroundGradientTo: GlobalStyles.colors.background.secondary,
+          decimalPlaces: 0, // optional, defaults to 2dp
+          color: (opacity = 255) => `rgba(39, 174, 96, ${opacity})`,
+          labelColor: (opacity = 255) => `rgba(255, 255, 255, ${opacity})`,
+          style: {
+            borderRadius: 16,
+          },
+          propsForBackgroundLines: {
+            backgroundColor: "transparent",
+          },
+        }}
+        bezier
+        style={{
+          marginVertical: 8,
+          borderRadius: 8,
+        }}
+      />
+      {/* <LineChart
         areaChart
         hideDataPoints
         isAnimated
         curved={true}
-        adjustToWidth
         animationDuration={1200}
         startFillColor={GlobalStyles.colors.accent.primary100}
         endFillColor={GlobalStyles.colors.accent.primary100}
         startOpacity={0.75}
         endOpacity={0}
         endSpacing={0}
-        data={lineData}
+        data={balancesInInterval}
         thickness={5}
         hideAxesAndRules
         hideYAxisText
@@ -62,7 +123,7 @@ export default function BalanceChart({ data, interval }) {
                   marginLeft: -40,
                 }}
               >
-                {/* <Text
+                <Text
                   style={{
                     color: "white",
                     fontSize: 14,
@@ -71,7 +132,7 @@ export default function BalanceChart({ data, interval }) {
                   }}
                 >
                   {items[0].date}
-                </Text> */}
+                </Text>
 
                 <View
                   style={{
@@ -89,7 +150,7 @@ export default function BalanceChart({ data, interval }) {
             );
           },
         }}
-      />
+      /> */}
     </View>
   );
 }
