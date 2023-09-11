@@ -36,8 +36,8 @@ export default function ManageExpense({ route, navigation }) {
     setIsSubmitting(true);
     try {
       //await deleteExpense(expenseId);
+      console.log(expenseId);
       dispatch(deleteExpense(expenseId, onActionComplete));
-      navigation.goBack();
     } catch (error) {
       setError("Could not delete expense - please try again later");
       setIsSubmitting(false);
@@ -75,25 +75,27 @@ export default function ManageExpense({ route, navigation }) {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <ExpenseForm
-        submitButtonLabel={isEditing ? "Update" : "Add"}
-        onSubmit={confirmHandler}
-        onCancel={cancelHandler}
-        defaultValues={selectedExpense}
-      />
+    <View style={styles.container}>
+      <ScrollView>
+        <ExpenseForm
+          submitButtonLabel={isEditing ? "Update" : "Add"}
+          onSubmit={confirmHandler}
+          onCancel={cancelHandler}
+          defaultValues={selectedExpense}
+        />
 
-      {isEditing && (
-        <View style={styles.deleteContainer}>
-          <IconButton
-            icon="trash"
-            color={GlobalStyles.colors.error300}
-            size={36}
-            onPress={deleteExpenseHandler}
-          />
-        </View>
-      )}
-    </ScrollView>
+        {isEditing && (
+          <View style={styles.deleteContainer}>
+            <IconButton
+              icon="trash"
+              color={GlobalStyles.colors.error300}
+              size={36}
+              onPress={deleteExpenseHandler}
+            />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -102,9 +104,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     backgroundColor: GlobalStyles.colors.background.primary,
+    //marginBottom: 100,
   },
   deleteContainer: {
-    marginVertical: 16,
+    marginTop: 16,
+    marginBottom: 24,
     paddingTop: 8,
     borderTopWidth: 2,
     borderTopColor: GlobalStyles.colors.gray500,
