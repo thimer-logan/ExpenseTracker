@@ -4,6 +4,7 @@ export const expensesSlice = createSlice({
   name: "expenses",
   initialState: {
     expenses: [],
+    categories: [],
     loading: false,
   },
   reducers: {
@@ -38,7 +39,8 @@ export const expensesSlice = createSlice({
     },
     initExpensesSuccess: (state, action) => {
       state.loading = false;
-      state.expenses = action.payload; // replace current state with fetched expenses
+      state.expenses = action.payload.expenses;
+      state.categories = action.payload.categories;
     },
     initExpensesFailure: (state, action) => {
       //state.error = action.payload;

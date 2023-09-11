@@ -9,6 +9,7 @@ import DropdownInput from "./DropdownInput";
 import { Button, IconButton, TextInput } from "react-native-paper";
 import SubItemList from "./SubItemList";
 import AddItemModal from "./AddItemModal";
+import { useSelector } from "react-redux";
 
 export default function ExpenseForm({
   onSubmit,
@@ -16,6 +17,7 @@ export default function ExpenseForm({
   submitButtonLabel,
   defaultValues,
 }) {
+  const categories = useSelector((state) => state.expenses.categories);
   const [isFormModalVisible, setFormModalVisible] = useState(false);
   const [inputs, setInputs] = useState({
     amount: {
@@ -36,6 +38,10 @@ export default function ExpenseForm({
       value: defaultValues ? defaultValues.type : "",
       isValid: true,
     },
+    category: {
+      value: defaultValues ? defaultValues.category : "",
+      isValid: true,
+    },
     description: {
       value: defaultValues ? defaultValues.description : "",
       isValid: true,
@@ -51,8 +57,12 @@ export default function ExpenseForm({
     { key: "2", value: ExpenseTypes[1] },
   ];
 
-  const dropdownDefault = expenseTypeData.find(
+  const typeDefault = expenseTypeData.find(
     (item) => item.value === inputs.type.value
+  );
+
+  const categoryDefault = categories.find(
+    (item) => item.value === inputs.category.value
   );
 
   const itemAddedHandler = (item) => {
@@ -76,6 +86,7 @@ export default function ExpenseForm({
       date: new Date(inputs.date.value).toISOString(),
       name: inputs.name.value,
       type: inputs.type.value,
+      category: inputs.category.value,
       description: inputs.description.value,
       items: inputs.items.value,
     };
@@ -84,8 +95,19 @@ export default function ExpenseForm({
     const dateIsValid = expenseData.date.toString() !== "Invalid Date";
     const nameIsValid = expenseData.name.trim().length > 0;
     const typeIsValid = ExpenseTypes.includes(expenseData.type);
+    const categoryIsValid = categories.some(
+      (category) => category.value === expenseData.category
+    );
 
-    if (!(amountIsValid && dateIsValid && nameIsValid && typeIsValid)) {
+    if (
+      !(
+        amountIsValid &&
+        dateIsValid &&
+        nameIsValid &&
+        typeIsValid &&
+        categoryIsValid
+      )
+    ) {
       setInputs((prev) => {
         return {
           amount: { value: prev.amount.value, isValid: amountIsValid },
@@ -95,6 +117,7 @@ export default function ExpenseForm({
             isValid: nameIsValid,
           },
           type: { value: prev.type.value, isValid: typeIsValid },
+          category: { value: prev.category.value, isValid: categoryIsValid },
           description: { value: prev.description.value, isValid: true },
           items: { value: prev.items.value, isValid: true },
         };
@@ -109,7 +132,8 @@ export default function ExpenseForm({
     !inputs.amount.isValid ||
     !inputs.date.isValid ||
     !inputs.name.isValid ||
-    !inputs.type.isValid;
+    !inputs.type.isValid ||
+    !inputs.category.isValid;
 
   return (
     <View style={styles.form}>
@@ -151,7 +175,14 @@ export default function ExpenseForm({
         invalid={!inputs.type.isValid}
         data={expenseTypeData}
         setSelected={inputChangedHandler.bind(this, "type")}
-        defaultOption={dropdownDefault}
+        defaultOption={typeDefault}
+      />
+      <DropdownInput
+        label="Category"
+        invalid={!inputs.category.isValid}
+        data={categories}
+        setSelected={inputChangedHandler.bind(this, "category")}
+        defaultOption={categoryDefault}
       />
       <Input
         label="Description"
@@ -218,6 +249,7 @@ export default function ExpenseForm({
 const styles = StyleSheet.create({
   form: {
     marginTop: 8,
+    flex: 1,
   },
   title: {
     fontSize: 24,
