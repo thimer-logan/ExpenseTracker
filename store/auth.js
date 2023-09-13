@@ -5,7 +5,7 @@ export const authSlice = createSlice({
   name: "auth",
   initialState: {
     isAuthenticated: false,
-    loading: false,
+    loading: true,
     token: null,
     userInfo: {
       uid: null,
@@ -14,8 +14,9 @@ export const authSlice = createSlice({
   },
   reducers: {
     authenticateStart: (state, action) => {
-      state.loading = false;
+      state.loading = true;
       state.error = null;
+      state.token = null;
       state.isAuthenticated = false;
     },
     authenticateSuccess: (state, action) => {
@@ -33,7 +34,10 @@ export const authSlice = createSlice({
     logout: (state, action) => {
       state.token = null;
       state.isAuthenticated = false;
-      AsyncStorage.removeItem("token");
+      state.loading = false;
+      state.error = null;
+      AsyncStorage.removeItem("refreshToken");
+      AsyncStorage.removeItem("tokenExpiry");
     },
   },
 });

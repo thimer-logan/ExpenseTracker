@@ -18,8 +18,15 @@ import Login from "./screens/Login";
 import Signup from "./screens/Signup";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { authenticateSuccess, logout } from "./store/auth";
+import {
+  authenticateFailure,
+  authenticateStart,
+  authenticateSuccess,
+  logout,
+} from "./store/auth";
 import LoadingOverlay from "./components/ui/LoadingOverlay";
+import Statistics from "./screens/Statistics";
+import { clearStorage, isLoginTokenValid, loginWithToken } from "./utils/http";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -78,8 +85,8 @@ function ExpensesOverview() {
             return (
               <View
                 style={{
-                  position: "absolute",
-                  bottom: 20,
+                  //position: "absolute",
+                  //bottom: 20,
                   width: 50,
                   height: 50,
                   borderRadius: 50,
@@ -92,7 +99,7 @@ function ExpensesOverview() {
                   name="add"
                   size={40}
                   color="white"
-                  style={{ alignContent: "center" }}
+                  //style={{ alignContent: "center" }}
                 />
               </View>
             );
@@ -110,6 +117,17 @@ function ExpensesOverview() {
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="Statistics"
+        component={Statistics}
+        options={{
+          title: "Statistics",
+          tabBarLabel: "Statistics",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart" size={size} color={color} />
+          ),
+        }}
+      /> */}
     </Tab.Navigator>
   );
 }
@@ -176,25 +194,14 @@ function Navigation() {
 }
 
 function Root() {
-  const [isTryingLogin, setIsTryingLogin] = useState(true);
+  const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchToken = async () => {
-      const storedToken = await AsyncStorage.getItem("token");
-      const storedUid = await AsyncStorage.getItem("uid");
-
-      if (storedToken && storedUid) {
-        dispatch(authenticateSuccess({ token: storedToken, uid: storedUid }));
-      }
-
-      setIsTryingLogin(false);
-    };
-
-    fetchToken();
+    dispatch(loginWithToken());
   }, []);
 
-  if (isTryingLogin) {
+  if (auth.loading) {
     return <LoadingOverlay />;
   }
 
