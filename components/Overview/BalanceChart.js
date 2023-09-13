@@ -6,29 +6,14 @@ import {
   getBalanceByInterval,
   getBalanceDataPoints,
   getIntervalForTimeline,
+  getTotalExpenses,
+  getTotalIncome,
 } from "../../utils/numbers";
 import { getDateMinusDays, getMinusDaysFromFilter } from "../../utils/date";
 import { LineChart } from "react-native-chart-kit";
 
 export default function BalanceChart({ data, interval, totalBalance }) {
-  const lineData = [
-    { value: 0 },
-    { value: 20 },
-    { value: 18 },
-    { value: 40 },
-    { value: 36 },
-    { value: 60 },
-    { value: 54 },
-    { value: 85 },
-  ];
-
-  const balances = getBalanceByInterval(
-    data,
-    getIntervalForTimeline(interval),
-    0
-  );
-
-  const balancesInInterval = balances.filter((expense) => {
+  const balancesInInterval = data.filter((expense) => {
     const days = getMinusDaysFromFilter(interval);
     const today = new Date();
     const dateNDaysAgo = getDateMinusDays(today, days);
@@ -37,12 +22,22 @@ export default function BalanceChart({ data, interval, totalBalance }) {
     return date >= dateNDaysAgo && date <= today;
   });
 
-  if (balancesInInterval.length <= 0) {
-    balancesInInterval.push({
+  const startingBalance =
+    totalBalance -
+    (getTotalIncome(balancesInInterval) - getTotalExpenses(balancesInInterval));
+
+  const balances = getBalanceByInterval(
+    balancesInInterval,
+    getMinusDaysFromFilter(interval),
+    startingBalance
+  );
+
+  if (balances.length <= 0) {
+    balances.push({
       value: totalBalance,
       date: new Date().toISOString(),
     });
-    balancesInInterval.push({
+    balances.push({
       value: totalBalance,
       date: new Date().toISOString(),
     });
@@ -55,7 +50,7 @@ export default function BalanceChart({ data, interval, totalBalance }) {
           //labels: ["January", "February", "March", "April"],
           datasets: [
             {
-              data: balancesInInterval.map((item) => item.value),
+              data: balances.map((item) => item.value),
               withDots: false,
               color: (opacity = 255) => `rgba(39, 174, 96, ${opacity})`,
             },

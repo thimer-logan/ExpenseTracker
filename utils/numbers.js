@@ -1,6 +1,7 @@
 export function formatBalance(num) {
   return (formattedNumber = Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
   }).format(num));
 }
 
@@ -31,7 +32,7 @@ export function getNextInterval(date, intervalType) {
     case "daily":
       return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
     case "weekly":
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
     case "monthly":
       return new Date(date.getFullYear(), date.getMonth() + 1, 1);
     default:
@@ -39,7 +40,7 @@ export function getNextInterval(date, intervalType) {
   }
 }
 
-export function getBalanceByInterval(ddata, intervalType, startingBalance) {
+export function getBalanceByInterval(ddata, nDays, startingBalance) {
   if (ddata === null || ddata.length <= 0) {
     return [];
   }
@@ -49,29 +50,56 @@ export function getBalanceByInterval(ddata, intervalType, startingBalance) {
 
   let balance = startingBalance;
   const balances = [];
-  let currentEndDate = getNextInterval(new Date(data[0].date), intervalType);
+  const today = new Date();
+  const nDaysAgo = new Date(today);
+  nDaysAgo.setDate(today.getDate() - nDays);
 
-  data.forEach((item) => {
-    while (new Date(item.date) >= currentEndDate) {
-      balances.push({
-        value: balance,
-        date: currentEndDate,
-      });
-      currentEndDate = getNextInterval(currentEndDate, intervalType); // use currentEndDate to ensure no gaps in intervals
+  for (let i = 0; i <= nDays; i++) {
+    const currentDate = new Date(nDaysAgo);
+    currentDate.setDate(nDaysAgo.getDate() + i);
+
+    const currentDataEntries = data.filter(
+      (d) => new Date(d.date).toDateString() === currentDate.toDateString()
+    );
+
+    if (currentDataEntries.length > 0) {
+      const totalBalanceForTheDay = currentDataEntries.reduce((sum, entry) => {
+        if (entry.type === "Income") {
+          return sum + entry.amount;
+        } else if (entry.type === "Expense") {
+          return sum - entry.amount;
+        }
+      }, 0);
+      balance += totalBalanceForTheDay;
     }
 
-    if (item.type === "Income") {
-      balance += item.amount;
-    } else if (item.type === "Expense") {
-      balance -= item.amount;
-    }
-  });
+    balances.push({
+      value: balance,
+      date: currentDate,
+    });
+  }
 
-  // Push the balance for the last interval
-  balances.push({
-    value: balance,
-    date: currentEndDate,
-  });
+  // data.forEach((item) => {
+  //   while (new Date(item.date) >= currentEndDate) {
+  //     balances.push({
+  //       value: balance,
+  //       date: currentEndDate,
+  //     });
+  //     currentEndDate = getNextInterval(currentEndDate, intervalType); // use currentEndDate to ensure no gaps in intervals
+  //   }
+
+  //   if (item.type === "Income") {
+  //     balance += item.amount;
+  //   } else if (item.type === "Expense") {
+  //     balance -= item.amount;
+  //   }
+  // });
+
+  // // Push the balance for the last interval
+  // balances.push({
+  //   value: balance,
+  //   date: currentEndDate,
+  // });
 
   return balances;
 }
