@@ -17,6 +17,7 @@ export const GlobalStyles = {
     background: {
       primary: "#121212",
       secondary: "#1E1E1E",
+      tertiary: "#dcdcdc",
     },
     accent: {
       primary100: "#38ff8b",
