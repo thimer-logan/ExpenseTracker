@@ -1,38 +1,237 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DUMMY_EXPENSES } from "../data/dummy-data";
+import expenses, {
+  addExpense,
+  updateExpense as updateExp,
+  deleteExpense as deleteExp,
+  initExpensesFailure,
+  initExpensesStart,
+  initExpensesSuccess,
+} from "../store/expenses";
+import {
+  authenticateFailure,
+  authenticateStart,
+  authenticateSuccess,
+} from "../store/auth";
 
-const BACKEND_URL = "";
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-export async function storeExpense(expense) {
-  const response = await axios.post(BACKEND_URL + "/expenses.json", expense);
-  const id = response.data.name;
-  return id;
+export function storeExpense(expense, onActionComplete) {
+  return async function initializeExpensesThunk(dispatch, getState) {
+    const response = await axios.post(
+      BACKEND_URL +
+        "/expenses/" +
+        getState().auth.userInfo.uid +
+        ".json?auth=" +
+        getState().auth.token,
+      expense
+    );
+    const id = response.data.name;
+
+    dispatch(addExpense({ ...expense, id: id }));
+    onActionComplete();
+  };
 }
 
-export async function fetchExpenses() {
-  // const response = await axios.get(BACKEND_URL + "/expenses.json");
+export function initializeExpenses(userId) {
+  return async function initializeExpensesThunk(dispatch, getState) {
+    dispatch(initExpensesStart());
 
-  // const expenses = [];
+    try {
+      const response = await axios.get(
+        BACKEND_URL +
+          "/expenses/" +
+          getState().auth.userInfo.uid +
+          ".json?auth=" +
+          getState().auth.token
+      );
 
-  // for (const key in response.data) {
-  //   const expense = {
-  //     id: key,
-  //     amount: response.data[key].amount,
-  //     date: new Date(response.data[key].date),
-  //     description: response.data[key].description,
-  //   };
+      const expenses = [];
 
-  //   expenses.push(expense);
-  // }
+      for (const key in response.data) {
+        const expense = {
+          id: key,
+          name: response.data[key].name,
+          amount: response.data[key].amount,
+          date: new Date(response.data[key].date).toISOString(),
+          type: response.data[key].type,
+          category: response.data[key].category,
+          description: response.data[key].description,
+          items: response.data[key].items,
+        };
 
-  // return expenses;
-  return DUMMY_EXPENSES;
+        expenses.push(expense);
+      }
+
+      expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const categories = await fetchCategories(getState().auth.token);
+
+      dispatch(initExpensesSuccess({ expenses, categories }));
+    } catch (error) {
+      console.log("initExpenses: " + error.message);
+      dispatch(initExpensesFailure(""));
+    }
+  };
 }
 
-export function updateExpense(id, expenseData) {
-  return axios.put(BACKEND_URL + `/expenses/${id}.json`, expenseData); // returning a promise
+export function updateExpense(id, expenseData, onActionComplete) {
+  return async function initializeExpensesThunk(dispatch, getState) {
+    dispatch(initExpensesStart());
+    await axios.put(
+      BACKEND_URL +
+        `expenses/${getState().auth.userInfo.uid}/${id}.json?auth=${
+          getState().auth.token
+        }`,
+      expenseData
+    );
+
+    dispatch(updateExp({ ...expenseData, id }));
+    onActionComplete();
+  };
 }
 
-export function deleteExpense(id) {
-  return axios.delete(BACKEND_URL + `/expenses/${id}.json`);
+export function deleteExpense(id, onActionComplete) {
+  return async function initializeExpensesThunk(dispatch, getState) {
+    dispatch(initExpensesStart());
+    await axios.delete(
+      BACKEND_URL +
+        `expenses/${getState().auth.userInfo.uid}/${id}.json?auth=${
+          getState().auth.token
+        }`
+    );
+
+    dispatch(deleteExp(id));
+    onActionComplete();
+  };
+}
+
+export async function fetchCategories(token) {
+  try {
+    const response = await axios.get(
+      BACKEND_URL + "categories.json?auth=" + token
+    );
+
+    const categories = [];
+
+    response.data.forEach((item, index) => {
+      if (item !== null) {
+        const category = {
+          key: index, // setting id to the index of current iteration
+          value: item,
+        };
+
+        categories.push(category);
+      }
+    });
+
+    return categories;
+  } catch (error) {
+    console.log("FetchCategories: " + error.message);
+  }
+}
+
+function authenticate(mode, email, password) {
+  return async function authenticateThunk(dispatch, getState) {
+    dispatch(authenticateStart());
+    try {
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/v1/accounts:${mode}?key=${process.env.EXPO_PUBLIC_API_KEY}`;
+      const response = await axios.post(url, {
+        email: email,
+        password: password,
+        returnSecureToken: true,
+      });
+
+      const expiry = getNewExpiry(+response.data.expiresIn);
+
+      AsyncStorage.setItem("refreshToken", response.data.refreshToken);
+      AsyncStorage.setItem("tokenExpiry", expiry.getTime().toString());
+
+      dispatch(
+        authenticateSuccess({
+          token: response.data.idToken,
+          uid: response.data.localId,
+        })
+      );
+    } catch (error) {
+      console.log("Authenticate: " + error.message);
+      dispatch(authenticateFailure("Error authenticating email & password"));
+    }
+  };
+}
+
+export function createUser(email, password) {
+  return authenticate("signUp", email, password);
+}
+
+export function login(email, password) {
+  return authenticate("signInWithPassword", email, password);
+}
+
+export async function isLoginTokenValid() {
+  const tokenExpiry = await AsyncStorage.getItem("tokenExpiry");
+  const now = new Date();
+  const expiryDate = new Date();
+
+  if (tokenExpiry) {
+    expiryDate.setTime(+tokenExpiry);
+    if (now < expiryDate) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function loginWithToken() {
+  return async function loginWithTokenThunk(dispatch, getState) {
+    dispatch(authenticateStart());
+    try {
+      const isTokenValid = await isLoginTokenValid();
+      if (!isTokenValid) {
+        clearStorage();
+        dispatch(authenticateFailure("Invalid login token"));
+        return;
+      }
+
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+      const response = await axios.post(
+        process.env.EXPO_PUBLIC_API_URL +
+          "/v1/token?key=" +
+          process.env.EXPO_PUBLIC_API_KEY,
+        "grant_type=refresh_token&refresh_token=" + refreshToken,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      const expiry = getNewExpiry(+response.data.expires_in);
+
+      AsyncStorage.setItem("refreshToken", response.data.refresh_token);
+      AsyncStorage.setItem("tokenExpiry", expiry.getTime().toString());
+
+      dispatch(
+        authenticateSuccess({
+          token: response.data.id_token,
+          uid: response.data.user_id,
+        })
+      );
+    } catch (error) {
+      console.log("LoginWithToken: " + error.message);
+      dispatch(authenticateFailure(error.message));
+    }
+  };
+}
+
+export function clearStorage() {
+  AsyncStorage.multiRemove(["refreshToken", "tokenExpiry"]);
+}
+
+function getNewExpiry(data) {
+  const expiry = new Date();
+  expiry.setTime(expiry.getTime() + data * 1000);
+  return expiry;
 }
