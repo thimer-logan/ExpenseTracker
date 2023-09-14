@@ -38,11 +38,16 @@ export default function AllExpenses() {
   };
 
   useEffect(() => {
-    const { filterBy, sortBy } = filterSettings;
-    let data = [...expenses.expenses]; // Use let, as we'll modify this
+    const { filterBy, sortBy, categories } = filterSettings;
+    let data = [...expenses.expenses];
 
     if (filterBy) {
       data = data.filter((item) => item.type === filterBy);
+    }
+
+    if (categories) {
+      const categorySet = new Set(categories.map((cat) => cat.value));
+      data = data.filter((item) => categorySet.has(item.category));
     }
 
     if (sortBy) {

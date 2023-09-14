@@ -10,6 +10,8 @@ import React, { useEffect, useState } from "react";
 import { Button } from "react-native-paper";
 import { GlobalStyles } from "../../constants/styles";
 import FilterOptions from "./FilterOptions";
+import CategoryFilter from "./CategoryFilter";
+import { useSelector } from "react-redux";
 
 export default function FilterModal({
   initialValue,
@@ -17,6 +19,7 @@ export default function FilterModal({
   onClose,
   onSubmit,
 }) {
+  const categories = useSelector((state) => state.expenses.categories);
   const [filterSettings, setFilterSettings] = useState(initialValue);
 
   useEffect(() => {
@@ -62,6 +65,14 @@ export default function FilterModal({
             Reset
           </Button>
           <View style={styles.contentContainer}>
+            <CategoryFilter
+              title="Category"
+              categories={categories}
+              selectedCategories={filterSettings.categories}
+              onSelectionChanged={(value) =>
+                filterChangeHandler("categories", value)
+              }
+            />
             <FilterOptions
               title="Filter By"
               buttons={["Income", "Expense"]}
