@@ -18,7 +18,7 @@ import {
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export function storeExpense(expense, onActionComplete) {
-  return async function initializeExpensesThunk(dispatch, getState) {
+  return async function storeExpensesThunk(dispatch, getState) {
     const response = await axios.post(
       BACKEND_URL +
         "/expenses/" +
@@ -71,13 +71,13 @@ export function initializeExpenses(userId) {
       dispatch(initExpensesSuccess({ expenses, categories }));
     } catch (error) {
       console.log("initExpenses: " + error.message);
-      dispatch(initExpensesFailure(""));
+      dispatch(initExpensesFailure("Could not retrieve expenses"));
     }
   };
 }
 
 export function updateExpense(id, expenseData, onActionComplete) {
-  return async function initializeExpensesThunk(dispatch, getState) {
+  return async function updateExpensesThunk(dispatch, getState) {
     dispatch(initExpensesStart());
     await axios.put(
       BACKEND_URL +
@@ -93,7 +93,7 @@ export function updateExpense(id, expenseData, onActionComplete) {
 }
 
 export function deleteExpense(id, onActionComplete) {
-  return async function initializeExpensesThunk(dispatch, getState) {
+  return async function deleteExpensesThunk(dispatch, getState) {
     dispatch(initExpensesStart());
     await axios.delete(
       BACKEND_URL +
