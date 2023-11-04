@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import BalanceSummary from "../components/Overview/BalanceSummary";
 import { GlobalStyles } from "../constants/styles";
@@ -74,33 +74,39 @@ export default function Home({ navigation }) {
   const balance = totalIncome - totalExpenses;
 
   return (
-    <View style={styles.container}>
-      <BalanceSummary
-        balance={balance}
-        income={totalIncome}
-        expenses={totalExpenses}
-      />
-      <BalanceChart
-        data={expenses.expenses}
-        interval={timeline}
-        totalBalance={balance}
-      />
-      <TimelineSelector
-        buttons={["day", "week", "month", "year"]}
-        value={timeline}
-        onChange={onTimelineChangeHandler}
-      />
-      <View style={styles.recentTransactionHeader}>
-        <Text style={styles.recentTransactionText}>Recent Transactions</Text>
-        <Button onPress={onSeeAllPressedHandler} mode="flat">
-          See All
-        </Button>
-      </View>
-      <ExpensesOutput
-        expenses={recentExpenses}
-        fallbackText="No recent transactions"
-      />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <BalanceSummary
+          balance={balance}
+          income={totalIncome}
+          expenses={totalExpenses}
+        />
+        <BalanceChart
+          data={expenses.expenses}
+          interval={timeline}
+          totalBalance={balance}
+        />
+        <TimelineSelector
+          buttons={["day", "week", "month", "year"]}
+          value={timeline}
+          onChange={onTimelineChangeHandler}
+        />
+        <View style={styles.recentTransactionHeader}>
+          <Text style={styles.recentTransactionText}>Recent Transactions</Text>
+          <Button onPress={onSeeAllPressedHandler} mode="flat">
+            See All
+          </Button>
+        </View>
+        <ExpensesOutput
+          expenses={recentExpenses}
+          fallbackText="No recent transactions"
+          useView={true}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -111,6 +117,9 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 0,
     backgroundColor: GlobalStyles.colors.background.primary,
+  },
+  scrollView: {
+    marginTop: 12,
   },
   recentTransactionHeader: {
     flexDirection: "row",
