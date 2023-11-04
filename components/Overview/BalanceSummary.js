@@ -3,6 +3,7 @@ import React from "react";
 import { GlobalStyles } from "../../constants/styles";
 import BalanceItem from "./BalanceItem";
 import { formatBalance } from "../../utils/numbers";
+import Card from "../ui/Card";
 
 export default function BalanceSummary({ balance, income, expenses }) {
   const formattedBalance = formatBalance(balance);
@@ -10,7 +11,7 @@ export default function BalanceSummary({ balance, income, expenses }) {
   const formattedExpenses = formatBalance(expenses);
 
   return (
-    <View style={styles.container}>
+    <Card style={styles.container}>
       <Text style={styles.balanceLabel}>Total Balance</Text>
       <Text style={styles.balanceText}>${formattedBalance}</Text>
       <View style={styles.row}>
@@ -25,20 +26,15 @@ export default function BalanceSummary({ balance, income, expenses }) {
           iconName="arrow-up-circle"
         />
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: GlobalStyles.colors.accent.primary500,
-    elevation: 3,
+    flexDirection: "column",
+    backgroundColor: GlobalStyles.colors.accent.primary600,
     shadowColor: GlobalStyles.colors.accent.primary100,
-    shadowRadius: 4,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.4,
   },
   balanceLabel: {
     color: GlobalStyles.colors.text.primary,
@@ -46,7 +42,7 @@ const styles = StyleSheet.create({
   },
   balanceText: {
     color: GlobalStyles.colors.text.primary,
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: "bold",
   },
   row: {
