@@ -3,11 +3,16 @@ import ExpensesSummary from "./ExpensesSummary";
 import ExpensesList from "./ExpensesList";
 import { GlobalStyles } from "../../constants/styles";
 
-export default function ExpensesOutput({ style, expenses, fallbackText }) {
+export default function ExpensesOutput({
+  style,
+  expenses,
+  fallbackText,
+  useView,
+}) {
   let content = <Text style={styles.infoText}>{fallbackText}</Text>;
 
   if (expenses.length > 0) {
-    content = <ExpensesList expenses={expenses} />;
+    content = <ExpensesList expenses={expenses} useView={useView} />;
   }
 
   return <View style={[styles.container, style]}>{content}</View>;
