@@ -1,7 +1,7 @@
-export function formatBalance(num) {
+export function formatBalance(num, digits = 2) {
   return (formattedNumber = Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
   }).format(num));
 }
 
