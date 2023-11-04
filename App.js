@@ -7,7 +7,7 @@ import ManageExpense from "./screens/ManageExpense";
 import RecentExpenses from "./screens/RecentExpenses";
 import AllExpenses from "./screens/AllExpenses";
 import { GlobalStyles } from "./constants/styles";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import IconButton from "./components/ui/IconButton";
 import ExpensesContextProvider from "./store/expenses-context";
 import Home from "./screens/Home";
@@ -27,6 +27,7 @@ import {
 import LoadingOverlay from "./components/ui/LoadingOverlay";
 import Statistics from "./screens/Statistics";
 import { clearStorage, isLoginTokenValid, loginWithToken } from "./utils/http";
+import Budget from "./screens/Budget";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -106,6 +107,21 @@ function ExpensesOverview() {
           },
         }}
       /> */}
+      <Tab.Screen
+        name="Budget"
+        component={Budget}
+        options={{
+          title: "Budget",
+          tabBarLabel: "Budget",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="account-cash"
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
       <Tab.Screen
         name="AllExpenses"
         component={AllExpenses}
