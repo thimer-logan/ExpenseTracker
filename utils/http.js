@@ -115,16 +115,17 @@ export async function fetchCategories(token) {
 
     const categories = [];
 
-    response.data.forEach((item, index) => {
-      if (item !== null) {
+    response.data
+      .filter((item) => item !== null)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((item, index) => {
         const category = {
           key: index, // setting id to the index of current iteration
           value: item,
         };
 
         categories.push(category);
-      }
-    });
+      });
 
     return categories;
   } catch (error) {
