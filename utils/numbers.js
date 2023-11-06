@@ -149,3 +149,7 @@ export function getTotalExpenses(data) {
     .filter((item) => item.type === "Expense")
     .reduce((acc, current) => acc + current.amount, 0);
 }
+
+export function isValidNumber(num) {
+  return typeof num === "number" && !isNaN(num);
+}
