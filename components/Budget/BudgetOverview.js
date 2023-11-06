@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Card from "../ui/Card";
 import TimelineSelector from "../ui/TimelineSelector";
 import { GlobalStyles } from "../../constants/styles";
-import { formatBalance } from "../../utils/numbers";
+import { formatBalance, isValidNumber } from "../../utils/numbers";
 import { ProgressBar } from "react-native-paper";
 import {
   getLastnMonthsAbbreviation,
@@ -21,10 +21,26 @@ const BudgetOverview = ({
   const timelineAbbrevs = getLastnMonthsAbbreviation(timelineLength);
   const timelineValue = getMonthAbbreviation(timeline);
 
-  const budgetSpent = budgetTotal - budgetRemaining;
-  const formattedBudgetSpent = formatBalance(budgetSpent, 0);
-  const formattedBudgetRem = formatBalance(budgetRemaining);
-  const formattedBudgetTotal = formatBalance(budgetTotal, 0);
+  const budgetSpent =
+    isValidNumber(budgetTotal) && isValidNumber(budgetRemaining)
+      ? budgetTotal - budgetRemaining
+      : NaN;
+
+  const progress =
+    isValidNumber(budgetSpent) && isValidNumber(budgetTotal)
+      ? budgetSpent / budgetTotal
+      : 0;
+  const formattedBudgetRem = isValidNumber(budgetRemaining)
+    ? formatBalance(budgetRemaining)
+    : "----";
+
+  const spentText =
+    isValidNumber(budgetSpent) && isValidNumber(budgetTotal)
+      ? `$${formatBalance(budgetSpent, 0)} of $${formatBalance(
+          budgetTotal,
+          0
+        )} spent`
+      : "";
 
   const timelineChangeHandler = (value) => {
     // parent component needs month as a number
@@ -44,13 +60,11 @@ const BudgetOverview = ({
           <Text style={styles.budgetLabel}>Remaining</Text>
         </View>
         <ProgressBar
-          progress={budgetSpent / budgetTotal}
+          progress={progress}
           color={GlobalStyles.colors.accent.primary100}
           style={{ borderRadius: 6, height: 8 }}
         />
-        <Text style={styles.budgetSpentText}>
-          ${formattedBudgetSpent} of ${formattedBudgetTotal} spent
-        </Text>
+        <Text style={styles.budgetSpentText}>{spentText}</Text>
       </View>
     </Card>
   );
