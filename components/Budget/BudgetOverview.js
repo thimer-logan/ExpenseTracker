@@ -27,9 +27,12 @@ const BudgetOverview = ({
       : NaN;
 
   const progress =
-    isValidNumber(budgetSpent) && isValidNumber(budgetTotal)
+    isValidNumber(budgetSpent) &&
+    budgetTotal !== 0 &&
+    isValidNumber(budgetTotal)
       ? budgetSpent / budgetTotal
       : 0;
+
   const formattedBudgetRem = isValidNumber(budgetRemaining)
     ? formatBalance(budgetRemaining)
     : "----";
