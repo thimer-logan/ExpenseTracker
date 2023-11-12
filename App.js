@@ -2,73 +2,139 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import ManageExpense from "./screens/ManageExpense";
-import RecentExpenses from "./screens/RecentExpenses";
 import AllExpenses from "./screens/AllExpenses";
 import { GlobalStyles } from "./constants/styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import IconButton from "./components/ui/IconButton";
-import ExpensesContextProvider from "./store/expenses-context";
 import Home from "./screens/Home";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./store/store";
-import { PaperProvider } from "react-native-paper";
 import Login from "./screens/Login";
 import Signup from "./screens/Signup";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  authenticateFailure,
-  authenticateStart,
-  authenticateSuccess,
-  logout,
-} from "./store/auth";
+import { useEffect } from "react";
+import { logout } from "./store/auth";
 import LoadingOverlay from "./components/ui/LoadingOverlay";
-import Statistics from "./screens/Statistics";
-import { clearStorage, isLoginTokenValid, loginWithToken } from "./utils/http";
+import { loginWithToken } from "./utils/http";
 import Budget from "./screens/Budget";
+import ManageBudget from "./screens/ManageBudget";
 
-const Stack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
+const BudgetStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function ExpensesOverview() {
+function LogoutButton({ tintColor = "white" }) {
   const dispatch = useDispatch();
   return (
-    <Tab.Navigator
-      screenOptions={({ navigation }) => ({
+    <IconButton
+      icon="log-out-outline"
+      size={24}
+      color={tintColor}
+      onPress={() => dispatch(logout())}
+    />
+  );
+}
+
+function HomeStackScreen({ navigation }) {
+  return (
+    <HomeStack.Navigator
+      screenOptions={{
         headerStyle: {
           backgroundColor: GlobalStyles.colors.background.secondary,
+          shadowColor: "transparent",
+          elevation: 0,
         },
         headerTintColor: "white",
         headerShadowVisible: false,
+      }}
+    >
+      <HomeStack.Screen
+        name="Home"
+        component={Home}
+        options={{
+          headerLeft: ({ tintColor }) => <LogoutButton tintColor={tintColor} />,
+          headerRight: ({ tintColor }) => (
+            <IconButton
+              icon="add"
+              size={24}
+              color={tintColor}
+              onPress={() => navigation.navigate("ManageExpense")}
+            />
+          ),
+        }}
+      />
+      <HomeStack.Screen
+        name="AllExpenses"
+        component={AllExpenses}
+        options={{ title: "All Transactions" }}
+      />
+      <HomeStack.Screen
+        name="ManageExpense"
+        component={ManageExpense}
+        options={{
+          presentation: "modal",
+        }}
+      />
+    </HomeStack.Navigator>
+  );
+}
+
+function BudgetStackScreen({ navigation }) {
+  return (
+    <BudgetStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: GlobalStyles.colors.background.secondary,
+          shadowColor: "transparent",
+          elevation: 0,
+        },
+        headerTintColor: "white",
+        headerShadowVisible: false,
+      }}
+    >
+      <BudgetStack.Screen
+        name="Budget"
+        component={Budget}
+        options={{
+          headerLeft: ({ tintColor }) => <LogoutButton tintColor={tintColor} />,
+          headerRight: ({ tintColor }) => (
+            <IconButton
+              icon="add"
+              size={24}
+              color={tintColor}
+              onPress={() => navigation.navigate("ManageBudget")}
+            />
+          ),
+        }}
+      />
+      <BudgetStack.Screen
+        name="ManageBudget"
+        component={ManageBudget}
+        options={{
+          presentation: "modal",
+        }}
+      />
+    </BudgetStack.Navigator>
+  );
+}
+
+function AuthenticatedStack() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ navigation }) => ({
         tabBarStyle: {
           backgroundColor: GlobalStyles.colors.background.secondary,
           shadowColor: "transparent",
           borderTopWidth: 0,
         },
         tabBarActiveTintColor: GlobalStyles.colors.accent.primary500,
-        headerRight: ({ tintColor }) => (
-          <IconButton
-            icon="add"
-            size={24}
-            color={tintColor}
-            onPress={() => navigation.navigate("ManageExpense")}
-          />
-        ),
-        headerLeft: ({ tintColor }) => (
-          <IconButton
-            icon="log-out-outline"
-            size={24}
-            color={tintColor}
-            onPress={() => dispatch(logout())}
-          />
-        ),
+        headerShown: false,
       })}
     >
       <Tab.Screen
-        name="Home"
-        component={Home}
+        name="HomeTab"
+        component={HomeStackScreen}
         options={{
           title: "Home",
           tabBarLabel: "Home",
@@ -77,39 +143,9 @@ function ExpensesOverview() {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="ManageExpense"
-        component={ManageExpense}
-        options={{
-          tabBarLabel: "",
-          tabBarIcon: ({ color, size }) => {
-            return (
-              <View
-                style={{
-                  //position: "absolute",
-                  //bottom: 20,
-                  width: 50,
-                  height: 50,
-                  borderRadius: 50,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: GlobalStyles.colors.accent.primary500,
-                }}
-              >
-                <Ionicons
-                  name="add"
-                  size={40}
-                  color="white"
-                  //style={{ alignContent: "center" }}
-                />
-              </View>
-            );
-          },
-        }}
-      /> */}
       <Tab.Screen
-        name="Budget"
-        component={Budget}
+        name="BudgetTab"
+        component={BudgetStackScreen}
         options={{
           title: "Budget",
           tabBarLabel: "Budget",
@@ -122,25 +158,21 @@ function ExpensesOverview() {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="AllExpenses"
         component={AllExpenses}
         options={{
+          headerStyle: {
+            backgroundColor: GlobalStyles.colors.background.secondary,
+            shadowColor: "transparent",
+            elevation: 0,
+          },
+          headerTintColor: "white",
+          headerShadowVisible: false,
           title: "All Expenses",
           tabBarLabel: "All Expenses",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" size={size} color={color} />
-          ),
-        }}
-      />
-      {/* <Tab.Screen
-        name="Statistics"
-        component={Statistics}
-        options={{
-          title: "Statistics",
-          tabBarLabel: "Statistics",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
           ),
         }}
       /> */}
@@ -148,39 +180,9 @@ function ExpensesOverview() {
   );
 }
 
-function AuthenticatedStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: GlobalStyles.colors.background.secondary,
-          shadowColor: "transparent", // this covers iOS
-          elevation: 0, // this covers Android
-        },
-        headerTintColor: "white",
-        headerShadowVisible: false,
-        headerBackTitleVisible: false,
-      }}
-    >
-      <Stack.Screen
-        name="ExpensesOverview"
-        component={ExpensesOverview}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ManageExpense"
-        component={ManageExpense}
-        options={{
-          presentation: "modal",
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
 function AuthStack() {
   return (
-    <Stack.Navigator
+    <HomeStack.Navigator
       screenOptions={{
         headerStyle: {
           backgroundColor: GlobalStyles.colors.background.secondary,
@@ -192,9 +194,9 @@ function AuthStack() {
         headerBackTitleVisible: false,
       }}
     >
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Signup" component={Signup} />
-    </Stack.Navigator>
+      <HomeStack.Screen name="Login" component={Login} />
+      <HomeStack.Screen name="Signup" component={Signup} />
+    </HomeStack.Navigator>
   );
 }
 
