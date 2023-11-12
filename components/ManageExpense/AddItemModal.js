@@ -2,7 +2,7 @@ import { Modal, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { Button } from "react-native-paper";
 import { GlobalStyles } from "../../constants/styles";
-import Input from "./Input";
+import Input from "../ui/Input";
 
 export default function AddItemModal({ onSubmit, onCancel, ...modalProps }) {
   const [name, setName] = useState("");
