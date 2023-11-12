@@ -14,6 +14,14 @@ import {
   authenticateStart,
   authenticateSuccess,
 } from "../store/auth";
+import {
+  addBudget,
+  updateBudget as updateBudg,
+  deleteBudget as deleteBudg,
+  initBudgetsFailure,
+  initBudgetsStart,
+  initBudgetsSuccess,
+} from "../store/budgets";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -57,6 +65,7 @@ export function initializeExpenses(userId) {
           date: new Date(response.data[key].date).toISOString(),
           type: response.data[key].type,
           category: response.data[key].category,
+          budget: response.data[key].budget,
           description: response.data[key].description,
           items: response.data[key].items,
         };
@@ -104,6 +113,107 @@ export function deleteExpense(id, onActionComplete) {
 
     dispatch(deleteExp(id));
     onActionComplete();
+  };
+}
+
+export function storeBudget(budget, onActionComplete) {
+  return async function storeBudgetThunk(dispatch, getState) {
+    dispatch(initBudgetsStart());
+    try {
+      const response = await axios.post(
+        BACKEND_URL +
+          "/budgets/" +
+          getState().auth.userInfo.uid +
+          ".json?auth=" +
+          getState().auth.token,
+        budget
+      );
+      const id = response.data.name;
+
+      dispatch(addBudget({ ...budget, id: id }));
+      onActionComplete();
+    } catch (error) {
+      console.log("updateBudget: " + error.message);
+      dispatch(initBudgetsFailure("Could not update budget"));
+    }
+  };
+}
+
+export function initializeBudgets() {
+  return async function initializeBudgetsThunk(dispatch, getState) {
+    dispatch(initBudgetsStart());
+
+    try {
+      const response = await axios.get(
+        BACKEND_URL +
+          "/budgets/" +
+          getState().auth.userInfo.uid +
+          ".json?auth=" +
+          getState().auth.token
+      );
+
+      const budgets = [];
+
+      for (const key in response.data) {
+        const budget = {
+          id: key,
+          name: response.data[key].name,
+          amount: response.data[key].amount,
+          date: new Date(response.data[key].date).toISOString(),
+          category: response.data[key].category,
+        };
+
+        budgets.push(budget);
+      }
+
+      budgets.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      dispatch(initBudgetsSuccess({ budgets }));
+    } catch (error) {
+      console.log("initBudgets: " + error.message);
+      dispatch(initBudgetsFailure("Could not retrieve budgets"));
+    }
+  };
+}
+
+export function updateBudget(id, budgetData, onActionComplete) {
+  return async function updateBudgetThunk(dispatch, getState) {
+    dispatch(initBudgetsStart());
+    try {
+      await axios.put(
+        BACKEND_URL +
+          `budgets/${getState().auth.userInfo.uid}/${id}.json?auth=${
+            getState().auth.token
+          }`,
+        budgetData
+      );
+
+      dispatch(updateBudg({ ...budgetData, id }));
+      onActionComplete();
+    } catch (error) {
+      console.log("updateBudget: " + error.message);
+      dispatch(initBudgetsFailure("Could not update budget"));
+    }
+  };
+}
+
+export function deleteBudget(id, onActionComplete) {
+  return async function deleteBudgetThunk(dispatch, getState) {
+    dispatch(initBudgetsStart());
+    try {
+      await axios.delete(
+        BACKEND_URL +
+          `budgets/${getState().auth.userInfo.uid}/${id}.json?auth=${
+            getState().auth.token
+          }`
+      );
+
+      dispatch(deleteBudg(id));
+      onActionComplete();
+    } catch (error) {
+      console.log("deleteBudget: " + error.message);
+      dispatch(initBudgetsFailure("Could not delete budget"));
+    }
   };
 }
 
