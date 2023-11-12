@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     margin: 4,
   },
   chip: {
-    backgroundColor: GlobalStyles.colors.accent.secondary,
+    backgroundColor: GlobalStyles.colors.accent.secondary500,
   },
   textContainer: {
     // flexDirection: "row",
