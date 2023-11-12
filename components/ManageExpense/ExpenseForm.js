@@ -1,11 +1,11 @@
 import { Alert, StyleSheet, Text, View } from "react-native";
-import Input from "./Input";
+import Input from "../ui/Input";
 import { useState } from "react";
 import { getFormattedDate } from "../../utils/date";
 import { GlobalStyles } from "../../constants/styles";
 import { ExpenseTypes } from "../../constants/expenses";
 
-import DropdownInput from "./DropdownInput";
+import DropdownInput from "../ui/DropdownInput";
 import { Button, IconButton, TextInput } from "react-native-paper";
 import SubItemList from "./SubItemList";
 import AddItemModal from "./AddItemModal";
@@ -18,6 +18,7 @@ export default function ExpenseForm({
   defaultValues,
 }) {
   const categories = useSelector((state) => state.expenses.categories);
+  const budgets = useSelector((state) => state.budgets.budgets);
   const [isFormModalVisible, setFormModalVisible] = useState(false);
   const [inputs, setInputs] = useState({
     amount: {
@@ -40,6 +41,10 @@ export default function ExpenseForm({
     },
     category: {
       value: defaultValues ? defaultValues.category : "",
+      isValid: true,
+    },
+    budget: {
+      value: defaultValues ? defaultValues.budget : "",
       isValid: true,
     },
     description: {
@@ -65,6 +70,19 @@ export default function ExpenseForm({
     (item) => item.value === inputs.category.value
   );
 
+  const budgetData = budgets.map((item) => ({
+    key: item.id,
+    value: item.name,
+  }));
+
+  const budgetDefault = budgetData.find(
+    (item) => item.value === inputs.budget.value
+  );
+
+  const getBudgetCategory = (name) => {
+    return budgets.find((item) => item.name === name)?.category;
+  };
+
   const itemAddedHandler = (item) => {
     setFormModalVisible(false);
     const newItems = [...inputs.items.value, item];
@@ -87,6 +105,7 @@ export default function ExpenseForm({
       name: inputs.name.value,
       type: inputs.type.value,
       category: inputs.category.value,
+      budget: inputs.budget.value,
       description: inputs.description.value,
       items: inputs.items.value,
     };
@@ -95,9 +114,23 @@ export default function ExpenseForm({
     const dateIsValid = expenseData.date.toString() !== "Invalid Date";
     const nameIsValid = expenseData.name.trim().length > 0;
     const typeIsValid = ExpenseTypes.includes(expenseData.type);
+    const budgetIsValid = budgetData.some(
+      (budget) => budget.value === expenseData.budget
+    );
     const categoryIsValid = categories.some(
       (category) => category.value === expenseData.category
     );
+
+    // auto fill the category field if we have selected a budget
+    if (!categoryIsValid && budgetIsValid) {
+      const matchingBudget = budgets.find(
+        (item) => item.name === expenseData.budget
+      );
+      if (matchingBudget) {
+        expenseData.category = matchingBudget.category;
+        categoryIsValid = true;
+      }
+    }
 
     if (
       !(
@@ -118,6 +151,7 @@ export default function ExpenseForm({
           },
           type: { value: prev.type.value, isValid: typeIsValid },
           category: { value: prev.category.value, isValid: categoryIsValid },
+          budget: { value: prev.budget.value, isValid: budgetIsValid },
           description: { value: prev.description.value, isValid: true },
           items: { value: prev.items.value, isValid: true },
         };
@@ -183,6 +217,20 @@ export default function ExpenseForm({
         data={categories}
         setSelected={inputChangedHandler.bind(this, "category")}
         defaultOption={categoryDefault}
+      />
+      <DropdownInput
+        label="Link to Budget"
+        invalid={!inputs.budget.isValid}
+        data={
+          inputs.category.isValid
+            ? budgetData.filter(
+                (item) =>
+                  getBudgetCategory(item.value) === inputs.category.value
+              )
+            : budgetData
+        }
+        setSelected={inputChangedHandler.bind(this, "budget")}
+        defaultOption={budgetDefault}
       />
       <Input
         label="Description"
