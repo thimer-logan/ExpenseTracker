@@ -19,9 +19,11 @@ import LoadingOverlay from "./components/ui/LoadingOverlay";
 import { loginWithToken } from "./utils/http";
 import Budget from "./screens/Budget";
 import ManageBudget from "./screens/ManageBudget";
+import Statistics from "./screens/Statistics";
 
 const HomeStack = createNativeStackNavigator();
 const BudgetStack = createNativeStackNavigator();
+const StatisticsStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function LogoutButton({ tintColor = "white" }) {
@@ -119,6 +121,38 @@ function BudgetStackScreen({ navigation }) {
   );
 }
 
+function StatisticsStackScreen({ navigation }) {
+  return (
+    <StatisticsStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: GlobalStyles.colors.background.secondary,
+          shadowColor: "transparent",
+          elevation: 0,
+        },
+        headerTintColor: "white",
+        headerShadowVisible: false,
+      }}
+    >
+      <StatisticsStack.Screen
+        name="Statistics"
+        component={Statistics}
+        options={{
+          headerLeft: ({ tintColor }) => <LogoutButton tintColor={tintColor} />,
+          // headerRight: ({ tintColor }) => (
+          //   <IconButton
+          //     icon="add"
+          //     size={24}
+          //     color={tintColor}
+          //     onPress={() => navigation.navigate("ManageBudget")}
+          //   />
+          // ),
+        }}
+      />
+    </StatisticsStack.Navigator>
+  );
+}
+
 function AuthenticatedStack() {
   return (
     <Tab.Navigator
@@ -158,24 +192,17 @@ function AuthenticatedStack() {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="AllExpenses"
-        component={AllExpenses}
+      <Tab.Screen
+        name="StatisticsTab"
+        component={StatisticsStackScreen}
         options={{
-          headerStyle: {
-            backgroundColor: GlobalStyles.colors.background.secondary,
-            shadowColor: "transparent",
-            elevation: 0,
-          },
-          headerTintColor: "white",
-          headerShadowVisible: false,
-          title: "All Expenses",
-          tabBarLabel: "All Expenses",
+          title: "Statistics",
+          tabBarLabel: "Statistics",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <Ionicons name="stats-chart" size={size} color={color} />
           ),
         }}
-      /> */}
+      />
     </Tab.Navigator>
   );
 }
