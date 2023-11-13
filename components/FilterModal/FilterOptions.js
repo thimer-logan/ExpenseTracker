@@ -17,7 +17,7 @@ export default function FilterOptions({ title, buttons, value, onChange }) {
               value === button ? GlobalStyles.colors.text.primary : "black"
             }
             buttonColor={
-              value === button && GlobalStyles.colors.accent.secondary
+              value === button && GlobalStyles.colors.accent.secondary500
             }
             style={[styles.button, value === button && styles.buttonSelected]}
           >
