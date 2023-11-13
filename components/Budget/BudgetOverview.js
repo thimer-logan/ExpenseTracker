@@ -56,6 +56,8 @@ const BudgetOverview = ({
         buttons={[...timelineAbbrevs].reverse()}
         value={timelineValue}
         onChange={timelineChangeHandler}
+        buttonStyle={styles.timelineButton}
+        textStyle={styles.timelineText}
       />
       <View style={styles.bottomContainer}>
         <View style={styles.budgetContainer}>
@@ -102,5 +104,11 @@ const styles = StyleSheet.create({
   budgetSpentText: {
     color: GlobalStyles.colors.text.primary,
     fontSize: 14,
+  },
+  timelineButton: {
+    borderColor: "transparent",
+  },
+  timelineText: {
+    color: GlobalStyles.colors.text.primary,
   },
 });
