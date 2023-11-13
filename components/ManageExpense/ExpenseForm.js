@@ -117,7 +117,7 @@ export default function ExpenseForm({
     const budgetIsValid = budgetData.some(
       (budget) => budget.value === expenseData.budget
     );
-    const categoryIsValid = categories.some(
+    let categoryIsValid = categories.some(
       (category) => category.value === expenseData.category
     );
 
@@ -222,7 +222,7 @@ export default function ExpenseForm({
         label="Link to Budget"
         invalid={!inputs.budget.isValid}
         data={
-          inputs.category.isValid
+          inputs.category.isValid && inputs.category.value !== ""
             ? budgetData.filter(
                 (item) =>
                   getBudgetCategory(item.value) === inputs.category.value
