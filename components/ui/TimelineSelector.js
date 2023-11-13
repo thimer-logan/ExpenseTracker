@@ -2,16 +2,30 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import { GlobalStyles } from "../../constants/styles";
 
-export default function TimelineSelector({ buttons, value, onChange }) {
+export default function TimelineSelector({
+  buttons,
+  value,
+  onChange,
+  buttonStyle,
+  textStyle,
+}) {
   return (
     <View style={styles.container}>
       {buttons.map((button) => (
         <TouchableOpacity
           key={button}
-          style={[styles.button, value === button && styles.buttonSelected]}
+          style={[
+            styles.button,
+            buttonStyle,
+            value === button && styles.buttonSelected,
+          ]}
           onPress={() => onChange(button)}
         >
-          <Text style={value === button ? styles.textSelected : styles.text}>
+          <Text
+            style={
+              value === button ? styles.textSelected : [styles.text, textStyle]
+            }
+          >
             {button}
           </Text>
         </TouchableOpacity>
